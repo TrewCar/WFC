@@ -1,4 +1,6 @@
-﻿class Tile
+﻿using System.Drawing;
+
+class Tile
 {
     public Tile(Color[,] Tile, Color[] Left, Color[] Right, Color[] Up, Color[] Down)
     {
@@ -8,6 +10,15 @@
         this.RightNeighbour.Add(Right);
         this.UpNeighbour.Add(Up);
         this.DownNeighbour.Add(Down);
+    }
+    public Tile(Color[,] Tile, List<Color[]> Left, List<Color[]> Right, List<Color[]> Up, List<Color[]> Down)
+    {
+        Map = Tile;
+        CreateGridMap(Tile);
+        LeftNeighbour = Left;
+        RightNeighbour = Right;
+        UpNeighbour = Up;
+        DownNeighbour = Down;
     }
     public Color[,] Map { get; private set; }
 
@@ -61,6 +72,13 @@
             default:
                 break;
         }
+    }
+    public void ClearData()
+    {
+        LeftNeighbour = LeftNeighbour.Distinct(new MyComparer()).ToList();
+        RightNeighbour = RightNeighbour.Distinct(new MyComparer()).ToList();
+        UpNeighbour = UpNeighbour.Distinct(new MyComparer()).ToList();
+        DownNeighbour = DownNeighbour.Distinct(new MyComparer()).ToList();
     }
 
     public static bool operator ==(Tile one, Color[,] Map)

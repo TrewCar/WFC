@@ -1,7 +1,24 @@
-﻿public enum Neighbour
+﻿using System.Collections;
+
+public enum Neighbour
 {
     Left,
     Right,
     Up,
     Down
+}
+public class MyComparer : IEqualityComparer<Color[]>
+{
+    public bool Equals(Color[] x, Color[] y)
+    {
+        if (x[0] == y[0] && x[1] == y[1])
+            return true;
+        else
+            return false;
+    }
+
+    public int GetHashCode(Color[] obj)
+    {
+        return 0;
+    }
 }
