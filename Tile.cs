@@ -1,84 +1,65 @@
-﻿using System.Drawing;
-
-class Tile
+﻿class Tile
 {
-    public Tile(Color[,] Tile, Color[] Left, Color[] Right, Color[] Up, Color[] Down)
+    public Tile(Color[,] Tile)
     {
         Map = Tile;
         CreateGridMap(Tile);
-        this.LeftNeighbour.Add(Left);
-        this.RightNeighbour.Add(Right);
-        this.UpNeighbour.Add(Up);
-        this.DownNeighbour.Add(Down);
     }
-    public Tile(Color[,] Tile, List<Color[]> Left, List<Color[]> Right, List<Color[]> Up, List<Color[]> Down)
+    public Tile(Color[,] Tile, Color[] Upn, Color[] Rightn, Color[] Downn, Color[] Leftn)
     {
         Map = Tile;
         CreateGridMap(Tile);
-        LeftNeighbour = Left;
-        RightNeighbour = Right;
-        UpNeighbour = Up;
-        DownNeighbour = Down;
+        this.Leftn = Leftn;
+        this.Rightn = Rightn;
+        this.Upn = Upn;
+        this.Downn = Downn;
     }
     public Color[,] Map { get; private set; }
-
-    public List<Color[]> LeftNeighbour { get; private set; } = new();
-    public List<Color[]> RightNeighbour { get; private set; } = new();
-    public List<Color[]> UpNeighbour { get; private set; } = new();
-    public List<Color[]> DownNeighbour { get; private set; } = new();
 
     public Color[] Left { get; private set; }
     public Color[] Right { get; private set; }
     public Color[] Up { get; private set; }
     public Color[] Down { get; private set; }
 
+    public Color[] Leftn { get; private set; }
+    public Color[] Rightn { get; private set; }
+    public Color[] Upn { get; private set; }
+    public Color[] Downn { get; private set; }
+
     private void CreateGridMap(Color[,] Tile)
     {
-        Up = new Color[2];
-        Down = new Color[2];
-        Left = new Color[2];
-        Right = new Color[2];
+        Up = new Color[Tile.GetLength(0)];
+        Down = new Color[Tile.GetLength(0)];
+        Left = new Color[Tile.GetLength(0)];
+        Right = new Color[Tile.GetLength(0)];
 
-        Up[0] = Tile[0, 0];
-        Up[1] = Tile[1, 0];
-
-        Down[0] = Tile[0,1];
-        Down[1] = Tile[1, 1];
-
-        Left[0] = Tile[0, 0];
-        Left[1] = Tile[0, 1];
-
-        Right[0] = Tile[1, 0];
-        Right[1] = Tile[1, 1];
-
-    }
-
-    public void AddNeighbour(Neighbour pos, Color[] Neighbour)
-    {
-        switch (pos)
+        for (int i = 0; i < Tile.GetLength(0); i++)
         {
-            case global::Neighbour.Left:
-                LeftNeighbour.Add(Neighbour);
-                break;
-            case global::Neighbour.Right:
-                RightNeighbour.Add(Neighbour);
-                break;
-            case global::Neighbour.Up:
-                UpNeighbour.Add(Neighbour);
-                break;
-            case global::Neighbour.Down:
-                DownNeighbour.Add(Neighbour);
-                break;
-            default:
-                break;
+            Up[i] = Tile[i, 0];
+        }
+        for (int i = 0; i < Tile.GetLength(0); i++)
+        {
+            Down[i] = Tile[i, 1];
+        }
+        for (int i = 0; i < Tile.GetLength(0); i++)
+        {
+            Left[i] = Tile[0, i];
+        }
+        for (int i = 0; i < Tile.GetLength(0); i++)
+        {
+            Right[i] = Tile[1, i];
         }
     }
-    public void ClearData()
+
+    public void Draw(Point pos, Graphics g)
     {
-        LeftNeighbour = LeftNeighbour.Distinct(new MyComparer()).ToList();
-        RightNeighbour = RightNeighbour.Distinct(new MyComparer()).ToList();
-        UpNeighbour = UpNeighbour.Distinct(new MyComparer()).ToList();
-        DownNeighbour = DownNeighbour.Distinct(new MyComparer()).ToList();
+        for (int i = 0; i < Map.GetLength(0); i++)
+        {
+            for (int j = 0; j < Map.GetLength(1); j++)
+            {
+                g.FillRectangle(new SolidBrush(Map[i, j]), pos.X * Settings.RectSZ + Settings.RectSZ/Settings.Cells * i, pos.Y * Settings.RectSZ + Settings.RectSZ / Settings.Cells * j, Settings.RectSZ / Settings.Cells, Settings.RectSZ / Settings.Cells);
+            }
+        }
     }
 
     public static bool operator ==(Tile one, Color[,] Map)
@@ -98,4 +79,9 @@ class Tile
         return true;
     }
     public static bool operator !=(Tile one, Color[,] Map) => !(one == Map);
+
+    public Color[,] CloneMap()
+    {
+        return (Color[,])Map.Clone();
+    }
 }

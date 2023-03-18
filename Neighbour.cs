@@ -22,3 +22,9 @@ public class MyComparer : IEqualityComparer<Color[]>
         return 0;
     }
 }
+
+static public class Settings
+{
+    public static readonly int RectSZ = 10;
+    public static readonly int Cells = 2;
+}

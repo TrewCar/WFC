@@ -2,161 +2,129 @@
 {
     static public List<Tile> CreateTile(Bitmap input)
     {
+        Tiles = new();
         CreateTiles(input);
 
-        ClearDATA();
 
-        RotateTiles();
 
         return Tiles;
     }
+    static Color[,] Rotate90(Color[,] oldMatrix)
+    {
+        Color[,] newMatrix = new Color[oldMatrix.GetLength(1), oldMatrix.GetLength(0)];
+        int newColumn, newRow = 0;
+        for (int oldColumn = oldMatrix.GetLength(1) - 1; oldColumn >= 0; oldColumn--)
+        {
+            newColumn = 0;
+            for (int oldRow = 0; oldRow < oldMatrix.GetLength(0); oldRow++)
+            {
+                newMatrix[newRow, newColumn] = oldMatrix[oldRow, oldColumn];
+                newColumn++;
+            }
+            newRow++;
+        }
+        return newMatrix;
+    }
 
-    static private readonly int RectSZ = 10;
-    static private int Cells = 2;
+
+    static private readonly int RectSZ = Settings.RectSZ;
+    static private int Cells = Settings.Cells;
 
     static private List<Tile> Tiles = new();
     static private void CreateTiles(Bitmap input)
     {
-        for (int i = 0; i < input.Width; i += RectSZ)
+        for (int i = 0; i < input.Width; i += RectSZ / Cells)
         {
-            for (int j = 0; j < input.Height; j += RectSZ)
+            for (int j = 0; j < input.Height; j += RectSZ / Cells)
             {
-                Color[,] map = new Color[2, 2];
-
-                for (int t = 0; t < 2; t++)
+                Color[,] map = new Color[Cells, Cells];
+                try
                 {
-                    for (int r = 0; r < 2; r++)
+                    for (int t = 0; t < Cells; t++)
                     {
-                        Point temp = new(i + t * RectSZ / 2, j + r * RectSZ / 2);
-                        ProvPos(ref temp, 0, input.Width);
-                        map[t, r] = input.GetPixel(temp.X, temp.Y);
+                        for (int r = 0; r < Cells; r++)
+                        {
+                            Point temp = new(i + t * RectSZ / Cells, j + r * RectSZ / Cells);
+                            map[t, r] = input.GetPixel(temp.X, temp.Y);
+                        }
                     }
                 }
-
-                Color[] LeftNeighbour = new Color[2];
-                Color[] UpNeighbour = new Color[2];
-                Color[] RightNeighbour = new Color[2];
-                Color[] DownNeighbour = new Color[2];
-
-                for (int t = 0; t < 2; t++)
+                catch
                 {
-                    var temp = Left[t];
-                    temp = new Point(i + temp.X * RectSZ / 2, j + temp.Y * RectSZ / 2);
-                    ProvPos(ref temp, 0, input.Width);
-                    LeftNeighbour[t] = input.GetPixel(temp.X, temp.Y);
-                }
-                for (int t = 0; t < 2; t++)
-                {
-                    var temp = Up[t];
-                    temp = new Point(i + temp.X * RectSZ / Cells, j + temp.Y * RectSZ / Cells);
-                    ProvPos(ref temp, 0, input.Width);
-                    UpNeighbour[t] = input.GetPixel(temp.X, temp.Y);
-                }
-                for (int t = 0; t < 2; t++)
-                {
-                    var temp = Right[t];
-                    temp = new Point(i + temp.X * RectSZ / Cells, j + temp.Y * RectSZ / Cells);
-                    ProvPos(ref temp, 0, input.Width);
-                    RightNeighbour[t] = input.GetPixel(temp.X, temp.Y);
-                }
-                for (int t = 0; t < 2; t++)
-                {
-                    var temp = Down[t];
-                    temp = new Point(i + temp.X * RectSZ / Cells, j + temp.Y * RectSZ / Cells);
-                    ProvPos(ref temp, 0, input.Width);
-                    DownNeighbour[t] = input.GetPixel(temp.X, temp.Y);
+                    break;
                 }
 
-                bool q = true;
-
-                for (int t = 0; t < Tiles.Count; t++)
+                Point UpN = new Point(0, j - RectSZ / Cells);
+                Color[] Upn = new Color[Cells];
+                ProvPos(ref UpN, 0, input.Width);
+                for (int t = 0; t < Cells; t++)
                 {
-                    if (Tiles[t] == map)
-                    {
-                        Tiles[t].AddNeighbour(Neighbour.Up, UpNeighbour);
-                        Tiles[t].AddNeighbour(Neighbour.Down, DownNeighbour);
-                        Tiles[t].AddNeighbour(Neighbour.Left, LeftNeighbour);
-                        Tiles[t].AddNeighbour(Neighbour.Right, RightNeighbour);
-
-                        q = false;
-                        break;
-                    }
+                    Upn[t] = input.GetPixel(i + t * RectSZ / Cells, UpN.Y);
                 }
 
-                if (q) Tiles.Add(new Tile(map, LeftNeighbour, RightNeighbour, UpNeighbour, DownNeighbour));
+                Point DownN = new Point(0, j + RectSZ);
+                Color[] Downn = new Color[Cells];
+                ProvPos(ref DownN, 0, input.Width);
+                for (int t = 0; t < Cells; t++)
+                {
+                    Downn[t] = input.GetPixel(i + t * RectSZ / Cells, DownN.Y );
+                }
+
+                Point LeftN = new Point(i - RectSZ / Cells, 0);
+                Color[] Leftn = new Color[Cells];
+                ProvPos(ref LeftN, 0, input.Width);
+                for (int t = 0; t < Cells; t++)
+                {
+                    Leftn[t] = input.GetPixel(LeftN.X, j + t * RectSZ / Cells);
+                }
+
+                Point RightN = new Point(i + RectSZ, 0);
+                Color[] Rightn = new Color[Cells];
+                ProvPos(ref RightN, 0, input.Width);
+                for (int t = 0; t < Cells; t++)
+                {
+                    Rightn[t] = input.GetPixel(RightN.X, j + t * RectSZ / Cells);
+                }
+
+                Tiles.Add(new Tile(map, Upn, Rightn, Downn, Leftn));
+                
+                var t1 = Rotate90(map);
+                Tiles.Add(new Tile(t1, Leftn.Reverse().ToArray(), Upn, Rightn.Reverse().ToArray(), Downn));
+                var t2 = Rotate90(t1);
+                Tiles.Add(new Tile(t2, Downn.Reverse().ToArray(), Leftn.Reverse().ToArray(), Upn.Reverse().ToArray(), Rightn.Reverse().ToArray()));
+                var t3 = Rotate90(t2);
+                Tiles.Add(new Tile(t3, Rightn.Reverse().ToArray().Reverse().ToArray(), Downn.Reverse().ToArray(), Leftn.Reverse().ToArray().Reverse().ToArray(), Upn.Reverse().ToArray()));
+                
             }
         }
-
     }
-    private static void ClearDATA()
+    static private void ProvCop(Color[,] map)
     {
-        for (int i = 0; i < Tiles.Count; i++)
+        /*
+        bool q = true;
+        for (int t = 0; t < Tiles.Count; t++)
         {
-            Tiles[i].ClearData();
-        }
-    }
-    private static void RotateTiles()
-    {
-        List<Tile> list = new List<Tile>();
-
-        for (int i = 0; i < Tiles.Count; i++)
-        {
-            var tempMap = Tiles[i].Map;
-
-            (tempMap[0, 0], tempMap[1, 0], tempMap[1, 1], tempMap[0, 1]) = (tempMap[0, 1], tempMap[0, 0], tempMap[1, 0], tempMap[1, 1]);
-
-            var TempLeft = Tiles[i].DownNeighbour;
-            var TempUp = Tiles[i].LeftNeighbour;
-            var TempRight = Tiles[i].UpNeighbour;
-            var TempDown = Tiles[i].RightNeighbour;
-
-            for (int j = 0; j < TempUp.Count; j++)
+            if (Tiles[t] == map)
             {
-                (TempUp[j][0], TempUp[j][1]) = (TempUp[j][1], TempUp[j][0]);
+                q = false;
+                break;
             }
-            for (int j = 0; j < TempDown.Count; j++)
-            {
-                (TempDown[j][0], TempDown[j][1]) = (TempDown[j][1], TempDown[j][0]);
-            }
-
-            list.Add(new Tile(tempMap, TempLeft, TempRight, TempUp, TempDown));
         }
         
+        if (q) 
+        */
+        Tiles.Add(new Tile(map));
     }
-
     static private void ProvPos(ref Point Pos, int Min, int Max)
     {
         if (Pos.X == Max)
             Pos.X = 0;
         else if (Pos.X < Min)
-            Pos.X = Max - RectSZ / 2;
+            Pos.X = Max - RectSZ / Cells;
 
         if (Pos.Y == Max)
             Pos.Y = 0;
         else if (Pos.Y < Min)
-            Pos.Y = Max - RectSZ / 2;
+            Pos.Y = Max - RectSZ / Cells;
     }
-
-    #region Pos Next Neighbour //DON'T TOUCH
-    static private readonly Point[] Left = new Point[2]
-    {
-        new Point(-1,0),
-        new Point(-1,1)
-    };
-    static private readonly Point[] Right = new Point[2]
-    {
-        new Point(2,0),
-        new Point(2,1)
-    };
-    static private readonly Point[] Down = new Point[2]
-    {
-        new Point(0,2),
-        new Point(1,2)
-    };
-    static private readonly Point[] Up = new Point[2]
-    {
-        new Point(0,-1),
-        new Point(1,-1)
-    };
-    #endregion
 }
